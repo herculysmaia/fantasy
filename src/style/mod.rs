@@ -1,12 +1,21 @@
 use iced::{theme::Palette, Color};
 
+fn cor(r: f32, g: f32, b: f32) -> Color {
+    Color {
+        r: r / 255.0,
+        g: g / 255.0,
+        b: b / 255.0,
+        a: 1.0,
+    }
+}
+
 pub fn theme() -> iced::Theme {
     let palette = Palette {
-        background: Color { r: 217.0/255.0, g: 99.0/255.0, b: 0.0/255.0, a: 255.0/255.0 },
-        text: Color { r: 34.0/255.0, g: 34.0/255.0, b: 34.0/255.0, a: 255.0/255.0 },
-        primary: Color { r: 255.0/255.0, g: 255.0/255.0, b: 255.0/255.0, a: 255.0/255.0 },
-        success: Color { r: 38.0/255.0, g: 202.0/255.0, b: 94.0/255.0, a: 255.0/255.0 },
-        danger: Color { r: 255.0/255.0, g: 6.0/255.0, b: 33.0/255.0, a: 255.0/255.0 }
+        background: cor(217.0,  99.0, 0.0),
+        text: cor(34.0,  34.0, 34.0),
+        primary: cor(255.0,  255.0, 255.0),
+        success: cor(38.0,  202.0, 94.0),
+        danger: cor(255.0,  6.0, 33.0)
     };
 
     iced::Theme::custom("Cartola".to_string(), palette)
