@@ -1,6 +1,6 @@
-use iced::{widget::{button, container}, Length};
+use iced::{widget::{button, container}, Length, Task};
 
-use crate::app::{MessageDispatcher, Screen, AddTeam};
+use crate::app::screen::{MessageDispatcher, Screen, AddTeam, ScreenTaskReturn};
 
 #[derive(Debug, Clone)]
 pub enum HomeMessage {
@@ -16,14 +16,14 @@ impl Home {
 }
 
 impl Screen for Home {
-    fn update(&mut self, message: super::MessageDispatcher) -> Option<Box<dyn Screen>> {
+    fn update(&mut self, message: MessageDispatcher) -> ScreenTaskReturn {
         match message {
             MessageDispatcher::Home(msg) => {
                 match msg {
-                    HomeMessage::GoToAddTeam => Some(Box::new(AddTeam::new())),
+                    HomeMessage::GoToAddTeam => (Some(Box::new(AddTeam::new())), Task::none()),
                 }
             }
-            _ => None,
+            _ => (None, Task::none()),
             
         }
     }
