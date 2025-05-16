@@ -7,6 +7,7 @@ use iced::Task;
 use tokio::time::sleep;
 
 use crate::app::screen::{addteam::AddTeamMessage, MessageDispatcher, Screen, ScreenTaskReturn};
+use crate::app::api::buscar_time;
 
 #[derive(Debug, Clone)]
 pub enum BuscaMessage {
@@ -58,7 +59,15 @@ impl Screen for Busca {
                 (None, task)
             }
             MessageDispatcher::AddTeam(AddTeamMessage::Busca(BuscaMessage::TimeEnd(s))) => {
-                println!("Time end: {}", s);
+                let r = buscar_time(s);
+                match r {
+                    Ok(url) => {
+                        println!("URL: {:?}", url);
+                    }
+                    Err(e) => {
+                        println!("Error: {:?}", e);
+                    }
+                }
                 (None, Task::none())
             }
             MessageDispatcher::AddTeam(AddTeamMessage::Busca(BuscaMessage::TimeNotEnd)) => {
