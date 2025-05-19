@@ -40,6 +40,6 @@ async fn chamar_api(url: String, arg: String) -> Result<Vec<Time>, ApiError> {
     let mut times: Vec<Time> = serde_json::from_str(&json_text.as_str())
         .map_err(|_| ApiError::CantDeserialize)?;
 
-    times.truncate(5);
+    times.truncate(15);
     Ok(times)
 }

@@ -1,4 +1,4 @@
-use iced::{widget::{column, text}, Element, Length, Task};
+use iced::{widget::{column, row, button, text}, Element, Task};
 
 use crate::app::{MessageDispatcher, Screen, ScreenTaskReturn, Time};
 
@@ -12,11 +12,12 @@ pub struct Lista {
 #[derive(Debug, Clone)]
 pub enum ListaMessage {
     SetResultados(Vec<Time>),
+    Add(u32),
 }
 
-// fn message_proc(msg: ListaMessage) -> MessageDispatcher {
-//     MessageDispatcher::AddTeam(AddTeamMessage::Lista(msg))
-// }
+fn message_proc(msg: ListaMessage) -> MessageDispatcher {
+    MessageDispatcher::AddTeam(AddTeamMessage::Lista(msg))
+}
 
 fn listar_time(lista: &Vec<Time>) -> Element<MessageDispatcher> {
     let col = {
@@ -26,7 +27,9 @@ fn listar_time(lista: &Vec<Time>) -> Element<MessageDispatcher> {
             lista.iter().fold(
                 column![], |col, time| { 
                     col.push(
-                        text(format!("Time: {} | Dono: {}", time.nome_do_time, time.nome_do_dono))
+                        row![
+                            text(format!("Time: {} | Dono: {}", time.nome_do_time, time.nome_do_dono)),
+                            button("Adicionar").on_press(message_proc(ListaMessage::Add(time.id)))]
                     )
                 }
             )
@@ -52,6 +55,9 @@ impl Screen for Lista {
         match message {
             MessageDispatcher::AddTeam(AddTeamMessage::Lista(ListaMessage::SetResultados(resultado))) => {
                 self.set_resultados(resultado);
+            }
+            MessageDispatcher::AddTeam(AddTeamMessage::Lista(ListaMessage::Add(id))) => {
+                println!("{id}");
             }
             _ => (),
         }

@@ -37,7 +37,7 @@ pub struct Financeiro {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Time {
     #[serde(rename = "time_id")]
-    id: u32,
+    pub id: u32,
 
     #[serde(rename = "nome")]
     pub nome_do_time: String,

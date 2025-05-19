@@ -55,6 +55,43 @@ where
         vec![Tree::new(self.content.as_widget())]
     }
 
+    fn operate(
+            &self,
+            state: &mut Tree,
+            layout: Layout<'_>,
+            renderer: &Renderer,
+            operation: &mut dyn iced::advanced::widget::Operation,
+        ) {
+            operation.container(None, layout.bounds(), &mut |operation| {
+                    self.content
+                        .as_widget()
+                        .operate(&mut state.children[0], layout.children().next().unwrap(), renderer, operation);
+                });
+    }
+
+    fn on_event(
+            &mut self,
+            state: &mut Tree,
+            event: iced::Event,
+            layout: Layout<'_>,
+            cursor: mouse::Cursor,
+            renderer: &Renderer,
+            clipboard: &mut dyn iced::advanced::Clipboard,
+            shell: &mut iced::advanced::Shell<'_, Message>,
+            viewport: &Rectangle,
+        ) -> iced::advanced::graphics::core::event::Status {
+            self.content.as_widget_mut().on_event(
+                &mut state.children[0],
+                event,
+                layout.children().next().unwrap(),
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport
+            )
+        }
+
     fn draw(
         &self,
         state: &Tree,
