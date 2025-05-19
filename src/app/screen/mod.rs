@@ -1,8 +1,12 @@
 mod home;
 mod addteam;
+mod common;
 
 pub use home::Home;
 pub use addteam::AddTeam;
+
+use common::theme as definir_tema;
+
 use iced::Task;
 
 #[derive(Debug, Clone)]
@@ -18,7 +22,6 @@ pub trait Screen {
     fn view(&self) -> iced::Element<MessageDispatcher>;
 }
 
-
 pub struct App {
     screen: Box<dyn Screen>,
 }
@@ -33,8 +36,13 @@ impl App {
         )
     }
 
+    pub fn theme() -> iced::Theme {
+        definir_tema()
+    }
+
     pub fn update(&mut self, message: MessageDispatcher) -> Task<MessageDispatcher> {
         let (page, msg) = self.screen.update(message);
+        
         if let Some(s) = page {
             self.screen = s;
         }

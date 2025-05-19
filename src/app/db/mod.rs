@@ -40,10 +40,10 @@ pub struct Time {
     id: u32,
 
     #[serde(rename = "nome")]
-    nome_do_time: String,
+    pub nome_do_time: String,
 
     #[serde(rename = "nome_cartola")]
-    nome_do_dono: String,
+    pub nome_do_dono: String,
 
     #[serde(rename = "url_escudo_png")]
     escudo: String,

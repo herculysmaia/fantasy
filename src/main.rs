@@ -1,7 +1,7 @@
-pub mod app;
+mod app;
 
-use app::App;
+pub use app::App;
 
 fn main() -> iced::Result {
-    iced::application("Liga", App::update, App::view).theme(|_| app::theme()).run_with(App::new)
+    iced::application("Liga", App::update, App::view).theme(|_| App::theme()).run_with(App::new)
 }

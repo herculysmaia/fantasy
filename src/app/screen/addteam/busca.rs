@@ -1,90 +1,78 @@
-use std::time::Duration;
+use iced::{futures::channel::oneshot, widget::{row, text_input}, Element, Task};
+use tokio::time::{sleep, Duration};
 
-use iced::futures::channel::oneshot;
-use iced::widget::{row, text_input};
-use iced::Task;
+use crate::app::{buscar_time, screen::addteam::lista::ListaMessage, MessageDispatcher, Screen, ScreenTaskReturn, Time};
 
-use tokio::time::sleep;
+use super::AddTeamMessage;
 
-use crate::app::screen::{addteam::AddTeamMessage, MessageDispatcher, Screen, ScreenTaskReturn};
-use crate::app::api::buscar_time;
+pub struct Busca {
+    query: String,
+    temporizador: Option<oneshot::Sender<()>>,
+}
 
 #[derive(Debug, Clone)]
 pub enum BuscaMessage {
-    Busca(String),
-    TimeEnd(String),
-    TimeNotEnd,
-}
-
-pub struct Busca {
-    termo: String,
-    time_search: Option<oneshot::Sender<()>>,
+    EntradaDeTexto(String),
+    TimeReset,
 }
 
 fn message_proc(msg: BuscaMessage) -> MessageDispatcher {
     MessageDispatcher::AddTeam(AddTeamMessage::Busca(msg))
 }
 
+async fn buscar_time_na_api(query: String) -> Vec<Time>{
+    let resposta = buscar_time(query).await;
+    match resposta {
+        Ok(resposta) => {
+            return resposta;
+        }
+        Err(_) => {
+            println!("Erro ao buscar o time");
+            return vec![];
+        }  
+    }
+}
+
 impl Busca {
     pub fn new() -> Self {
         Self {
-            termo: String::new(),
-            time_search: None,
+            query: String::new(),
+            temporizador: None,
         }
     }
 }
 
 impl Screen for Busca {
     fn update(&mut self, message: MessageDispatcher) -> ScreenTaskReturn {
-
         match message {
-            MessageDispatcher::AddTeam(AddTeamMessage::Busca(BuscaMessage::Busca(s))) => {
-                self.termo = s.clone();
+            MessageDispatcher::AddTeam(AddTeamMessage::Busca(BuscaMessage::EntradaDeTexto(s))) => {
+                self.query = s.clone();
 
-                if let Some(sender) = self.time_search.take() {
+                if let Some(sender) = self.temporizador.take() {
                     let _ = sender.send(());
                 }
 
                 let (tx, rx) = oneshot::channel();
 
-                self.time_search = Some(tx);
+                self.temporizador = Some(tx);
 
                 let task = Task::perform(async move {
                     tokio::select! {
-                        _ = sleep(Duration::from_secs(10)) => message_proc(BuscaMessage::TimeEnd(s)),
-                        _ = rx => message_proc(BuscaMessage::TimeNotEnd),
+                        _ = sleep(Duration::from_secs(1)) => MessageDispatcher::AddTeam(AddTeamMessage::Lista(ListaMessage::SetResultados(buscar_time_na_api(s).await))),
+                        _ = rx => message_proc(BuscaMessage::TimeReset),
                     }
                 }, |msg| msg);
 
                 (None, task)
             }
-            MessageDispatcher::AddTeam(AddTeamMessage::Busca(BuscaMessage::TimeEnd(s))) => {
-                let r = buscar_time(s);
-                match r {
-                    Ok(url) => {
-                        println!("URL: {:?}", url);
-                    }
-                    Err(e) => {
-                        println!("Error: {:?}", e);
-                    }
-                }
-                (None, Task::none())
-            }
-            MessageDispatcher::AddTeam(AddTeamMessage::Busca(BuscaMessage::TimeNotEnd)) => {
-                (None, Task::none())
-            }
-            MessageDispatcher::Home(_) => (None, Task::none()),
-            
+            _ => (None, Task::none()),
         }
     }
 
-    fn view(&self) -> iced::Element<MessageDispatcher> {
+    fn view(&self) -> Element<MessageDispatcher> {
         row![
-            text_input("Nome do time", &self.termo).on_input(|s| {
-                MessageDispatcher::AddTeam(
-                    AddTeamMessage::Busca(BuscaMessage::Busca(s))
-                )
-            })
+            text_input("Nome do time", &self.query)
+                .on_input(|s| message_proc(BuscaMessage::EntradaDeTexto(s))),
         ].into()
     }
 }
