@@ -1,6 +1,6 @@
-use iced::{widget::{column, row, button, text}, Element, Task};
+use iced::{alignment::Horizontal, widget::{button, column, row, text}, Element, Length, Task};
 
-use crate::app::{MessageDispatcher, Screen, ScreenTaskReturn, Time};
+use crate::app::{screen::Home, MessageDispatcher, Screen, ScreenTaskReturn, Time};
 
 use super::AddTeamMessage;
 use super::super::common::WhiteFrame;
@@ -14,6 +14,7 @@ pub enum ListaMessage {
     SetResultados(Vec<Time>),
     Add(u32),
     Saved,
+    Return,
 }
 
 fn message_proc(msg: ListaMessage) -> MessageDispatcher {
@@ -70,11 +71,17 @@ impl Screen for Lista {
                     (None, Task::none())
                 }
             }
+            MessageDispatcher::AddTeam(Lista(Return)) => {
+                (Some(Box::new(Home::new())), Task::none())
+            }
             _ => (None, Task::none()),
         }
     }
 
     fn view(&self) -> Element<MessageDispatcher> {
-        WhiteFrame::new( listar_time(&self.resultados)).into()
+        column![
+            WhiteFrame::new( listar_time(&self.resultados)),
+            button(text("Voltar").width(Length::Fill).align_x(Horizontal::Center)).width(Length::Fill).on_press(message_proc(ListaMessage::Return)),
+        ].spacing(10).into()
     }
 }

@@ -112,7 +112,7 @@ where
                 },
                 shadow: Shadow::default(),
             },
-            Color::from_rgb(0.5, 0.5, 0.5),
+            Color::from_rgb(1., 1., 1.),
         );
 
         self.content.as_widget().draw(
