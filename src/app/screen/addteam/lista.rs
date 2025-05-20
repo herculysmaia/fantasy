@@ -13,6 +13,7 @@ pub struct Lista {
 pub enum ListaMessage {
     SetResultados(Vec<Time>),
     Add(u32),
+    Saved,
 }
 
 fn message_proc(msg: ListaMessage) -> MessageDispatcher {
@@ -52,17 +53,25 @@ impl Lista {
 
 impl Screen for Lista {
     fn update(&mut self, message: MessageDispatcher) -> ScreenTaskReturn {
-        match message {
-            MessageDispatcher::AddTeam(AddTeamMessage::Lista(ListaMessage::SetResultados(resultado))) => {
-                self.set_resultados(resultado);
-            }
-            MessageDispatcher::AddTeam(AddTeamMessage::Lista(ListaMessage::Add(id))) => {
-                println!("{id}");
-            }
-            _ => (),
-        }
+        use AddTeamMessage::Lista;
+        use ListaMessage::*;
 
-        (None, Task::none())
+        match message {
+            MessageDispatcher::AddTeam(Lista(SetResultados(resultado))) => {
+                self.set_resultados(resultado);
+                (None, Task::none())
+            }
+            MessageDispatcher::AddTeam(Lista(Add(id))) => {
+                if let Some(time) = self.resultados.iter().find(|t| t.id == id) {
+                    let time = time.clone();
+                    let task = Task::perform(async move { time.adicionar_no_banco().await }, |_| message_proc(ListaMessage::Saved));
+                    (None, task)
+                } else {
+                    (None, Task::none())
+                }
+            }
+            _ => (None, Task::none()),
+        }
     }
 
     fn view(&self) -> Element<MessageDispatcher> {
