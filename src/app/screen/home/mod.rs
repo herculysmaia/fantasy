@@ -1,10 +1,12 @@
-use iced::{widget::{button, container}, Length, Task};
+use iced::{widget::{button, column, container, text}, Alignment, Length, Task};
 
-use crate::app::screen::{MessageDispatcher, Screen, AddTeam, ScreenTaskReturn};
+use crate::app::screen::{MessageDispatcher, Screen, AddTeam, Finance, ScreenTaskReturn};
+
 
 #[derive(Debug, Clone)]
 pub enum HomeMessage {
     GoToAddTeam,
+    GoToFinance,
 }
 
 pub struct Home;
@@ -21,6 +23,7 @@ impl Screen for Home {
             MessageDispatcher::Home(msg) => {
                 match msg {
                     HomeMessage::GoToAddTeam => (Some(Box::new(AddTeam::new())), Task::none()),
+                    HomeMessage::GoToFinance => (Some(Box::new(Finance::new())), Task::none())
                 }
             }
             _ => (None, Task::none()),
@@ -30,10 +33,15 @@ impl Screen for Home {
 
     fn view(&self) -> iced::Element<super::MessageDispatcher> {
         container(
-            button("Adicionar time")
-                .on_press(MessageDispatcher::Home(HomeMessage::GoToAddTeam)),
+            column![
+                button(text("Adicionar time").width(Length::Fill).align_x(Alignment::Center)).on_press(MessageDispatcher::Home(HomeMessage::GoToAddTeam)).width(150),
+                button(text("Financeiro").width(Length::Fill).align_x(Alignment::Center)).on_press(MessageDispatcher::Home(HomeMessage::GoToFinance)).width(150),
+            ].align_x(Alignment::Center).spacing(10)
         )
-        .center(Length::Fill)
-        .into()
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x(Length::Fill) 
+        .center_y(Length::Fill) 
+.into()
     }
 }

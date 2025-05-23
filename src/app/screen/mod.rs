@@ -1,9 +1,11 @@
 mod home;
 mod addteam;
+mod finance;
 mod common;
 
 pub use home::Home;
 pub use addteam::AddTeam;
+pub use finance::Finance;
 
 use common::theme as definir_tema;
 
@@ -13,6 +15,7 @@ use iced::Task;
 pub enum MessageDispatcher {
     Home(home::HomeMessage),
     AddTeam(addteam::AddTeamMessage),
+    Finance(finance::FinanceMessage)
 }
 
 pub type ScreenTaskReturn = (Option<Box<dyn Screen>>, Task<MessageDispatcher>);
@@ -46,6 +49,7 @@ impl App {
         if let Some(s) = page {
             self.screen = s;
         }
+        
         msg
     }
 

@@ -6,6 +6,7 @@ use iced::{
 
 pub struct WhiteFrame<'a, Message, Renderer> {
     content: Element<'a, Message, Theme, Renderer>,
+    on_press: Option<Message>,
 }
 
 impl <'a, Message, Renderer> WhiteFrame<'a, Message, Renderer>
@@ -13,14 +14,23 @@ where
     Renderer: iced::advanced::Renderer,
 {
     pub fn new(content: Element<'a, Message, Theme, Renderer>) -> Self {
-        Self { content }
+        Self { 
+            content,
+            on_press: None,
+        }
     }
     
+    pub fn on_press(mut self, message: Message) -> Self {
+        self.on_press = Some(message);
+
+        self
+    }
 }
 
 impl<'a, Message, Renderer> Widget<Message, Theme, Renderer> for WhiteFrame<'a, Message, Renderer> 
 where 
     Renderer: iced::advanced::Renderer,
+    Message: Clone,
 {
     fn size(&self) -> Size<Length> {
         Size {
@@ -80,6 +90,18 @@ where
             shell: &mut iced::advanced::Shell<'_, Message>,
             viewport: &Rectangle,
         ) -> iced::advanced::graphics::core::event::Status {
+            if let iced::Event::Mouse(mouse_event) = &event {
+                if let mouse::Event::ButtonPressed(mouse::Button::Left) = mouse_event {
+                    if let Some(cursor_position) = cursor.position() {
+                        if layout.bounds().contains(cursor_position) {
+                            if let Some(message) = self.on_press.clone() {
+                                shell.publish(message);
+                                return iced::advanced::graphics::core::event::Status::Captured;
+                            }
+                        }
+                    }
+                }
+            }
             self.content.as_widget_mut().on_event(
                 &mut state.children[0],
                 event,
@@ -129,7 +151,7 @@ where
 
 impl<'a, Message, Renderer> From<WhiteFrame<'a, Message, Renderer>> for Element<'a, Message, Theme, Renderer>
 where
-    Message: 'a,
+    Message: Clone + 'a,
     Renderer: iced::advanced::Renderer + 'a,
 {
     fn from(widget: WhiteFrame<'a, Message, Renderer>) -> Self {

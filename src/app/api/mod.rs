@@ -1,7 +1,6 @@
 use dotenv::dotenv;
 
 use crate::app::Time;
-// use reqwest::Error;
 
 #[derive(Debug, Clone)]
 pub enum ApiError {

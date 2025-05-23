@@ -2,6 +2,7 @@ mod migrate;
 mod control;
 
 pub use migrate::criar_banco;
+pub use control::obter_times;
 
 use serde::{Deserialize, Serialize};
 
@@ -51,18 +52,27 @@ pub struct Time {
     pub nome_do_dono: String,
 
     #[serde(rename = "url_escudo_png")]
-    escudo: String,
+    pub escudo: String,
+
+    #[serde(skip, default)]
+    pub escudo_png: Vec<u8>,
 
     #[serde(rename = "foto_perfil")]
-    perfil: String,
+    pub perfil: String,
 
     #[serde(default)]
-    pontos: Vec<Pontuacao>, 
+    pub foto_png: Vec<u8>,
 
     #[serde(default)]
-    indicacao: Option<u32>,
+    pub pontos: Vec<Pontuacao>, 
 
     #[serde(default)]
-    participacao: Vec<u32>,
+    pub indicacao: Option<u32>,
+
+    #[serde(default)]
+    pub participacao: Vec<u32>,
+
+    #[serde(default)]
+    pub financeiro: u16,
 }
 
