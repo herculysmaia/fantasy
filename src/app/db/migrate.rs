@@ -22,14 +22,16 @@ pub fn criar_banco() -> Result<Connection> {
     )?;
 
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS movimentacoes (
-            id              INTEGER PRIMARY KEY AUTOINCREMENT,
-            time_id         INTEGER NOT NULL,
-            data_dia        INTEGER NOT NULL,
-            data_mes        INTEGER NOT NULL,
-            valor           INTEGER NOT NULL,
-            tipo            INTEGER NOT NULL,
-            FOREIGN KEY(time_id) REFERENCES times(id)
+        "CREATE TABLE movimentacoes (
+            id         INTEGER,
+            time_id    INTEGER NOT NULL,
+            data_dia   INTEGER NOT NULL,
+            data_mes   INTEGER NOT NULL,
+            valor      INTEGER NOT NULL,
+            tipo       INTEGER NOT NULL,
+            rodada     INTEGER,
+            PRIMARY    KEY(id AUTOINCREMENT),
+            FOREIGN    KEY(time_id) REFERENCES times(id));
         )",
         [],
     )?;

@@ -46,20 +46,63 @@ impl Time {
         }
     }
 
-    pub fn salvar_movimentacao(&self, time_id: u32, data_dia: u32, data_mes: u32, valor: f32, tipo: u32) {
+    pub fn salvar_movimentacao(&self, time_id: u32, data_dia: u32, data_mes: u32, valor: f32, tipo: u32, rodada: u32) {
         let conn = connect_db();
 
         conn.execute(
-            "INSERT INTO movimentacoes (time_id, data_dia, data_mes, valor, tipo) VALUES (?1, ?2, ?3, ?4, ?5)",
+            "INSERT INTO movimentacoes (time_id, data_dia, data_mes, valor, tipo, rodada) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
             [
                 time_id,
                 data_dia, 
                 data_mes,
                 (valor * 100.0) as u32,
                 tipo,
+                rodada,
             ]
         ).expect("Erro ao salvar movimentação");
-    } 
+    }
+
+    pub fn tem_participacao(&self, rodada: u32) -> bool {
+        self.participacao.contains(&rodada)
+    }
+
+    pub fn adicionar_rodada(&self, id: u32, rodada: u32) {
+        let conn = connect_db();
+
+        conn.execute(
+            "INSERT INTO participacoes (time_id, rodada, ano) VALUES (?1, ?2, ?3)",
+            (id, rodada, 2025),
+        ).expect("Erro ao inserir participação");
+
+        conn.execute(
+            "INSERT INTO movimentacoes (time_id, data_dia, data_mes, valor, tipo, rodada) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+            (
+                id,
+                30,
+                3,
+                (-5.0 * 100.0) as i32,
+                4,
+                rodada,
+            ),
+        ).expect("Erro ao inserir movimentação de participação");
+    }
+
+    pub fn remover_rodada(&self, id: u32, rodada: u32) {
+        let conn = connect_db();
+
+        conn.execute(
+            "DELETE FROM participacoes WHERE time_id = ?1 AND rodada = ?2 AND ano = 2025",
+            (id, rodada),
+        ).expect("Erro ao remover participação");
+
+        conn.execute(
+            "DELETE FROM movimentacoes WHERE time_id = ?1 AND rodada = ?2 AND tipo = 4",
+            (
+                id,
+                rodada,
+            ),
+        ).expect("Erro ao remover movimentação de participação");
+    }
 }
 
 pub fn obter_times() -> Vec<Time> {
@@ -80,7 +123,7 @@ pub fn obter_times() -> Vec<Time> {
             foto_png: row.get(4).expect("Erro ao converter PNG"),
             pontos: Vec::new(),
             indicacao: Some(0),
-            participacao: Vec::new(),
+            participacao: obter_participacao(row.get(0).expect("msg")),
             financeiro: obter_financeiro(row.get(0).expect("msg")),
         })
     }).expect("Erro");
@@ -139,4 +182,24 @@ pub fn obter_financeiro(id: u32) -> Financeiro {
         saldo: saldo,
         movimentacoes: retorno,
     }
+}
+
+fn obter_participacao(id: u32) -> Vec<u32> {
+    let conn = connect_db();
+
+    let mut stmt = conn.prepare(
+        "SELECT rodada FROM participacoes WHERE time_id = ?1 AND ano = 2025 ORDER BY rodada"
+    ).expect("Erro ao preparar consulta de participações");
+
+    let participacoes_iter = stmt.query_map([id], |row| {
+        row.get(0)
+    }).expect("Erro ao buscar participações");
+
+    let mut participacoes = Vec::new();
+    for rodada in participacoes_iter {
+        if let Ok(r) = rodada {
+            participacoes.push(r);
+        }
+    }
+    participacoes
 }

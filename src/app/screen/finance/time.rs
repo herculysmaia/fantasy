@@ -11,6 +11,8 @@ pub enum TimeDataMessage {
     TipoMovEscolhido(TipoMovimentacao),
     EntradaValor(String),
     EntradaData(String),
+    DesativarRodada(u32),
+    AtivarRodada(u32),
     Save,
     Back,
 }
@@ -68,12 +70,24 @@ impl TimeData {
     }
 
     fn content(&self) -> Element<MessageDispatcher> {
-        column![
-            row![
-                row![],
-                row![]
-            ]
-        ].into()
+
+        let mut buttons = row![];
+
+        for rodada in 1..=38 {
+            let ativo = self.data.tem_participacao(rodada);
+
+            let button = if ativo {
+                button(text(format!("{} ✔", rodada)))
+                    .on_press(message_proc(TimeDataMessage::DesativarRodada(rodada)))
+            } else {
+                button(text(format!("{}", rodada)))
+                    .on_press(message_proc(TimeDataMessage::AtivarRodada(rodada)))
+            };
+
+            buttons = buttons.push(button);
+        }
+
+        buttons.spacing(10).into()
     }
 
     fn rodape(&self) -> Element<MessageDispatcher> {
@@ -144,6 +158,7 @@ impl Screen for TimeData {
                     mes,
                     valor,
                     tipo,
+                    0
                 );
 
                 self.data.atulizar_financeiro();
@@ -151,6 +166,9 @@ impl Screen for TimeData {
                 self.show_popup = false;
             }
             MessageDispatcher::Finance(TimeData(Back)) => retorno = (Some(Box::new(Finance::new())), Task::none()),
+            MessageDispatcher::Finance(TimeData(AtivarRodada(rodada ))) => self.data.adicionar_rodada(self.data.id, rodada),
+            MessageDispatcher::Finance(TimeData(DesativarRodada(rodada ))) => self.data.remover_rodada(self.data.id, rodada),
+            
             _ => println!("Passou pelo update: TimeDataMessage com {:?}", message),
         }
 
