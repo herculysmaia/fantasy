@@ -1,4 +1,3 @@
-use iced::futures::future::ready;
 use iced::{Color, Font, Task};
 use iced::widget::{column, row, text, Image};
 use iced::widget::image::Handle;
@@ -7,7 +6,7 @@ use crate::app::screen::finance::TimeData;
 use crate::app::{obter_times, MessageDispatcher, Screen, ScreenTaskReturn, Time};
 
 use super::super::common::WhiteFrame;
-use super::{FinanceMessage, TimeDataMessage};
+use super::FinanceMessage;
 
 #[derive(Debug, Clone)]
 pub enum InicioFinanceMessage {
@@ -46,15 +45,8 @@ impl Screen for InicioFinance {
         use InicioFinanceMessage::*;
 
         match message {
-            MessageDispatcher::Finance(Inicio(GoToEdit(time))) => {
-                let task = Task::perform(
-                    ready(MessageDispatcher::Finance(
-                        FinanceMessage::TimeData(TimeDataMessage::Save(time))
-                    )),
-                    |msg| msg
-                );
-                
-                (Some(Box::new(TimeData::new())), task)
+            MessageDispatcher::Finance(Inicio(GoToEdit(time))) => {  
+                (Some(Box::new(TimeData::new(time))), Task::none())
             }
             _ => (None, Task::none()),
         }
@@ -96,7 +88,7 @@ fn widget_time(time: &Time) -> iced::Element<'static, MessageDispatcher> {
             column![
                 text(format!("{}", time.nome_do_time)),
                 row![
-                    text(format!("R$ {}", time.financeiro)),
+                    text(format!("R$ {}", time.financeiro.obter_saldo())),
                     text(format!("{}", time.nome_do_dono)),
                 ]
             ]

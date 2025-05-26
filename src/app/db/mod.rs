@@ -12,6 +12,20 @@ pub enum TipoMovimentacao {
     Deposito,
     Retirada,
     Indicacao,
+    Desconhecida,
+}
+
+impl std::fmt::Display for TipoMovimentacao {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::Deposito => "Depósito",
+            Self::Premiacao => "Premiação",
+            Self::Indicacao => "Indicação",
+            Self::Retirada => "Retirada",
+            Self::Desconhecida => "Desconhecida",
+        })
+    }
+    
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,6 +41,21 @@ pub struct Data {
     mes: u32,
 }
 
+impl Data {
+    pub fn new(dia: u32, mes: u32) -> Self {
+        Self { dia: dia, mes: mes }
+    }
+
+    pub fn set_data(&mut self, dia: u32, mes: u32) {
+        self.dia = dia;
+        self.mes = mes
+    } 
+
+    pub fn get_data(&self) -> (u32, u32) {
+        (self.dia, self.mes)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Movimentacao {
     data: Data,
@@ -38,6 +67,21 @@ pub struct Movimentacao {
 pub struct Financeiro {
     saldo: f32,
     movimentacoes: Vec<Movimentacao>,
+}
+
+impl Default for Financeiro {
+    fn default() -> Self {
+        Financeiro {
+            saldo: 0.0,
+            movimentacoes: Vec::new(),
+        }
+    }
+}
+
+impl Financeiro {
+    pub fn obter_saldo(&self) -> f32 {
+        self.saldo
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,6 +117,6 @@ pub struct Time {
     pub participacao: Vec<u32>,
 
     #[serde(default)]
-    pub financeiro: u16,
+    pub financeiro: Financeiro,
 }
 

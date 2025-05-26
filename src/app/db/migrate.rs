@@ -27,8 +27,8 @@ pub fn criar_banco() -> Result<Connection> {
             time_id         INTEGER NOT NULL,
             data_dia        INTEGER NOT NULL,
             data_mes        INTEGER NOT NULL,
-            valor           REAL NOT NULL,
-            tipo            TEXT NOT NULL,
+            valor           INTEGER NOT NULL,
+            tipo            INTEGER NOT NULL,
             FOREIGN KEY(time_id) REFERENCES times(id)
         )",
         [],
