@@ -1,5 +1,5 @@
-use iced::{Color, Font, Task};
-use iced::widget::{column, row, text, Image};
+use iced::{Color, Font, Length, Task};
+use iced::widget::{column, row, text, Image, Space};
 use iced::widget::image::Handle;
 
 use crate::app::screen::finance::TimeData;
@@ -70,10 +70,10 @@ fn titulo() -> iced::Element<'static, MessageDispatcher> {
 }
 
 fn listar_times(lista: &Vec<Time>) -> iced::Element<'static, MessageDispatcher> {
-    let mut linhas = column![];
+    let mut linhas = column![].spacing(10);
     
     for linha in lista.chunks(6) {
-        let mut linha_ui = row![];
+        let mut linha_ui = row![].spacing(10);
 
         for time in linha {
             let item = 
@@ -90,16 +90,24 @@ fn listar_times(lista: &Vec<Time>) -> iced::Element<'static, MessageDispatcher> 
 }
 
 fn widget_time(time: &Time) -> iced::Element<'static, MessageDispatcher> {
+    let segoe_ui = Font::with_name("Segoe UI");
+    let segoe_ui_bold = Font {
+        family: segoe_ui.family,
+        weight: iced::font::Weight::Bold,
+        ..Default::default()
+    };
+
     column![
         row![
-            Image::new(Handle::from_bytes(time.escudo_png.clone())),
+            Image::new(Handle::from_bytes(time.escudo_png.clone())).height(50),
             column![
-                text(format!("{}", time.nome_do_time)),
+                text(format!("{}", time.nome_do_time)).font(segoe_ui_bold),
                 row![
-                    text(format!("R$ {}", time.financeiro.obter_saldo())),
-                    text(format!("{}", time.nome_do_dono)),
-                ]
+                    text(format!("R$ {}", time.financeiro.obter_saldo())).font(segoe_ui_bold).size(20),
+                    Space::with_width(Length::Fill),
+                    text(format!("{}", time.nome_do_dono)).font(segoe_ui).size(10),
+                ].width(Length::Fill)
             ]
-        ]
+        ].spacing(5).padding(5)
     ].into()
 }
