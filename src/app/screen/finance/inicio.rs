@@ -70,15 +70,23 @@ fn titulo() -> iced::Element<'static, MessageDispatcher> {
 }
 
 fn listar_times(lista: &Vec<Time>) -> iced::Element<'static, MessageDispatcher> {
-    let mut widget = column![];
+    let mut linhas = column![];
     
-    for time in lista {
-        widget = widget.push(
-            WhiteFrame::new(widget_time(time).into()).on_press(message_proc(InicioFinanceMessage::GoToEdit(time.clone())))
-        );
+    for linha in lista.chunks(6) {
+        let mut linha_ui = row![];
+
+        for time in linha {
+            let item = 
+                WhiteFrame::new(widget_time(time).into())
+                .on_press(message_proc(InicioFinanceMessage::GoToEdit(time.clone())));
+
+            linha_ui = linha_ui.push(item);
+        }
+
+        linhas = linhas.push(linha_ui);
     }
 
-    widget.spacing(10).into()
+    linhas.into()
 }
 
 fn widget_time(time: &Time) -> iced::Element<'static, MessageDispatcher> {
