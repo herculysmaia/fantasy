@@ -12,6 +12,7 @@ pub enum TipoMovimentacao {
     Deposito,
     Retirada,
     Indicacao,
+    Participacao,
     Desconhecida,
 }
 
@@ -22,6 +23,7 @@ impl std::fmt::Display for TipoMovimentacao {
             Self::Premiacao => "Premiação",
             Self::Indicacao => "Indicação",
             Self::Retirada => "Retirada",
+            Self::Participacao => "Participação",
             Self::Desconhecida => "Desconhecida",
         })
     }
@@ -44,8 +46,8 @@ pub struct Data {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Movimentacao {
     data: Data,
-    valor: f32,
-    tipo: TipoMovimentacao
+    pub valor: f32,
+    pub tipo: TipoMovimentacao
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -66,6 +68,10 @@ impl Default for Financeiro {
 impl Financeiro {
     pub fn obter_saldo(&self) -> f32 {
         self.saldo as f32 / 100.0 
+    }
+
+    pub fn obter_movimentacoes(&self) -> &Vec<Movimentacao> {
+        &self.movimentacoes
     }
 }
 

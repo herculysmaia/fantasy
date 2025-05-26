@@ -39,6 +39,11 @@ impl Time {
                 perfil_bytes,
             ),
         ).expect("Erro ao inserir time no banco");
+
+        for i in 0..10 {
+            conn.execute(
+                "INSERT INTO participacoes (time_id, rodada, ano) VALUES (?1, ?2, ?3)", (self.id, i+1, 2025)).expect("Erro ao inserir participações no banco");
+        }
     }
 
     pub fn salvar_movimentacao(&self, time_id: u32, data_dia: u32, data_mes: u32, valor: f32, tipo: u32) {
@@ -61,7 +66,7 @@ pub fn obter_times() -> Vec<Time> {
     let conn = connect_db();
 
     let mut stmt = conn.prepare(
-        "SELECT t.id, t.nome_do_time, t.nome_do_dono, t.escudo, t.perfil FROM times as t LEFT JOIN movimentacoes as m ON m.time_id = t.id GROUP BY t.id, t.nome_do_time, t.nome_do_dono;"
+        "SELECT id, nome_do_time, nome_do_dono, escudo, perfil FROM times ORDER BY lower(nome_do_time);"
         ).expect("Erro ao buscar no banco");
 
     let times_iter = stmt.query_map((), |row| {
@@ -104,6 +109,7 @@ pub fn obter_financeiro(id: u32) -> Financeiro {
                     1 => TipoMovimentacao::Deposito,
                     2 => TipoMovimentacao::Retirada,
                     3 => TipoMovimentacao::Indicacao,
+                    4 => TipoMovimentacao::Participacao,
                     _ => TipoMovimentacao::Desconhecida,
                 }
             },

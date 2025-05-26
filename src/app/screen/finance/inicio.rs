@@ -97,17 +97,34 @@ fn widget_time(time: &Time) -> iced::Element<'static, MessageDispatcher> {
         ..Default::default()
     };
 
+    let mut lista = column![];
+
+    for movimentacao in time.financeiro.obter_movimentacoes() {
+        lista = lista.push(
+            row![
+                text("Depósitos")
+                    .font(segoe_ui)
+                    .size(12),
+                Space::with_width(Length::Fill),
+                text(format!("R$ {:.2}", movimentacao.valor as f32 / 100.0))
+                    .font(segoe_ui)
+                    .size(12),
+                ]
+        )
+    }
+
     column![
         row![
             Image::new(Handle::from_bytes(time.escudo_png.clone())).height(50),
             column![
                 text(format!("{}", time.nome_do_time)).font(segoe_ui_bold),
                 row![
-                    text(format!("R$ {}", time.financeiro.obter_saldo())).font(segoe_ui_bold).size(20),
+                    text(format!("R$ {:.2}", time.financeiro.obter_saldo() as f32)).font(segoe_ui_bold).size(20),
                     Space::with_width(Length::Fill),
                     text(format!("{}", time.nome_do_dono)).font(segoe_ui).size(10),
                 ].width(Length::Fill)
             ]
-        ].spacing(5).padding(5)
+        ].spacing(5).padding(5),
+        lista.padding(5)
     ].into()
 }

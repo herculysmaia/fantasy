@@ -39,6 +39,7 @@ impl TimeData {
             TipoMovimentacao::Deposito,
             TipoMovimentacao::Retirada,
             TipoMovimentacao::Indicacao,
+            TipoMovimentacao::Participacao,
         ];
 
         let popup_date = PopUpData {
@@ -132,7 +133,8 @@ impl Screen for TimeData {
                         TipoMovimentacao::Deposito => 1,
                         TipoMovimentacao::Retirada => 2,
                         TipoMovimentacao::Indicacao => 3,
-                        TipoMovimentacao::Desconhecida => 4,
+                        TipoMovimentacao::Participacao => 4,
+                        TipoMovimentacao::Desconhecida => 5,
                     }
                 } else { 4 };
 
