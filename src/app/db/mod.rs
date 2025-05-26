@@ -2,7 +2,7 @@ mod migrate;
 mod control;
 
 pub use migrate::criar_banco;
-pub use control::obter_times;
+pub use control::{obter_financeiro, obter_times};
 
 use serde::{Deserialize, Serialize};
 
@@ -41,21 +41,6 @@ pub struct Data {
     mes: u32,
 }
 
-impl Data {
-    pub fn new(dia: u32, mes: u32) -> Self {
-        Self { dia: dia, mes: mes }
-    }
-
-    pub fn set_data(&mut self, dia: u32, mes: u32) {
-        self.dia = dia;
-        self.mes = mes
-    } 
-
-    pub fn get_data(&self) -> (u32, u32) {
-        (self.dia, self.mes)
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Movimentacao {
     data: Data,
@@ -80,7 +65,7 @@ impl Default for Financeiro {
 
 impl Financeiro {
     pub fn obter_saldo(&self) -> f32 {
-        self.saldo
+        self.saldo as f32 / 100.0 
     }
 }
 
@@ -120,3 +105,8 @@ pub struct Time {
     pub financeiro: Financeiro,
 }
 
+impl Time {
+    pub fn atulizar_financeiro(&mut self) {
+        self.financeiro = obter_financeiro(self.id);
+    }
+}

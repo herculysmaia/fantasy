@@ -88,7 +88,7 @@ pub fn obter_times() -> Vec<Time> {
     retorno
 }
 
-fn obter_financeiro(id: u32) -> Financeiro {
+pub fn obter_financeiro(id: u32) -> Financeiro {
     let conn = connect_db();
 
     let mut stmt = conn.prepare(

@@ -1,6 +1,6 @@
 use iced::{widget::{button, column, combo_box, row, text, text_input}, Element, Length, Task};
 
-use crate::app::{db::{Data, TipoMovimentacao}, MessageDispatcher, Screen, ScreenTaskReturn, Time};
+use crate::app::{db::TipoMovimentacao, screen::{Finance, MessageDispatcher, Screen, ScreenTaskReturn}, Time};
 
 use super::FinanceMessage;
 
@@ -12,6 +12,7 @@ pub enum TimeDataMessage {
     EntradaValor(String),
     EntradaData(String),
     Save,
+    Back,
 }
 
 pub struct PopUpData {
@@ -79,7 +80,9 @@ impl TimeData {
             button(text("Adicionar")).on_press(
                 message_proc(TimeDataMessage::OpenPopUp)
             ),
-            button(text("Voltar")),
+            button(text("Voltar")).on_press(
+                message_proc(TimeDataMessage::Back)
+            ),
         ].into()
     }
 
@@ -105,18 +108,15 @@ impl Screen for TimeData {
         use FinanceMessage::TimeData;
         use TimeDataMessage::*;
 
+        let mut retorno: ScreenTaskReturn = (None, Task::none());
+
         match message {
             MessageDispatcher::Finance(TimeData(OpenPopUp)) => self.show_popup = true,
             MessageDispatcher::Finance(TimeData(ClosePopUp)) => self.show_popup = false,
-            MessageDispatcher::Finance(TimeData(TipoMovEscolhido(tipo))) => {
-                self.popup_data.movimentacao = Some(tipo);
-            }
-            MessageDispatcher::Finance(TimeData(EntradaValor(s))) => {
-                self.popup_data.valor = s;
-            }
-            MessageDispatcher::Finance(TimeData(EntradaData(s))) => {
-                self.popup_data.data = s;
-            }
+            MessageDispatcher::Finance(TimeData(TipoMovEscolhido(tipo))) => self.popup_data.movimentacao = Some(tipo),
+            MessageDispatcher::Finance(TimeData(EntradaValor(s))) => self.popup_data.valor = s,
+            MessageDispatcher::Finance(TimeData(EntradaData(s))) => self.popup_data.data = s,
+            
             MessageDispatcher::Finance(TimeData(Save)) => {
                 let parts: Vec<&str> = self.popup_data.data.split("/").collect();
 
@@ -144,11 +144,15 @@ impl Screen for TimeData {
                     tipo,
                 );
 
+                self.data.atulizar_financeiro();
+
+                self.show_popup = false;
             }
-            _ => println!("Passou pelo update: TimeDataMessage"),
+            MessageDispatcher::Finance(TimeData(Back)) => retorno = (Some(Box::new(Finance::new())), Task::none()),
+            _ => println!("Passou pelo update: TimeDataMessage com {:?}", message),
         }
 
-        (None, Task::none())
+        retorno
     }
 
     fn view(&self) -> Element<MessageDispatcher> {
