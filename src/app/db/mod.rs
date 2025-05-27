@@ -32,9 +32,9 @@ impl std::fmt::Display for TipoMovimentacao {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Pontuacao {
-    pontos: i32,
-    rodada: u32,
-    classificacao: u32,
+    pub pontos: f32,
+    pub rodada: u32,
+    pub classificacao: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

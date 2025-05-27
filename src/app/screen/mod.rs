@@ -1,11 +1,13 @@
 mod home;
 mod addteam;
+mod rodadas;
 mod finance;
 mod common;
 
 pub use home::Home;
 pub use addteam::AddTeam;
 pub use finance::Finance;
+pub use rodadas::Rodadas;
 
 use common::theme as definir_tema;
 
@@ -15,7 +17,8 @@ use iced::Task;
 pub enum MessageDispatcher {
     Home(home::HomeMessage),
     AddTeam(addteam::AddTeamMessage),
-    Finance(finance::FinanceMessage)
+    Rodadas(rodadas::RodadasMessage),
+    Finance(finance::FinanceMessage),
 }
 
 pub type ScreenTaskReturn = (Option<Box<dyn Screen>>, Task<MessageDispatcher>);

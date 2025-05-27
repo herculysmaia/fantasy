@@ -1,11 +1,12 @@
 use iced::{widget::{button, column, container, text}, Alignment, Length, Task};
 
-use crate::app::screen::{MessageDispatcher, Screen, AddTeam, Finance, ScreenTaskReturn};
+use crate::app::screen::{MessageDispatcher, Screen, AddTeam, Finance, Rodadas, ScreenTaskReturn};
 
 
 #[derive(Debug, Clone)]
 pub enum HomeMessage {
     GoToAddTeam,
+    GoToRodadas,
     GoToFinance,
 }
 
@@ -23,6 +24,7 @@ impl Screen for Home {
             MessageDispatcher::Home(msg) => {
                 match msg {
                     HomeMessage::GoToAddTeam => (Some(Box::new(AddTeam::new())), Task::none()),
+                    HomeMessage::GoToRodadas => (Some(Box::new(Rodadas::new())), Rodadas::task_inicial()),
                     HomeMessage::GoToFinance => (Some(Box::new(Finance::new())), Task::none())
                 }
             }
@@ -35,6 +37,7 @@ impl Screen for Home {
         container(
             column![
                 button(text("Adicionar time").width(Length::Fill).align_x(Alignment::Center)).on_press(MessageDispatcher::Home(HomeMessage::GoToAddTeam)).width(150),
+                button(text("Rodadas").width(Length::Fill).align_x(Alignment::Center)).on_press(MessageDispatcher::Home(HomeMessage::GoToRodadas)).width(150),
                 button(text("Financeiro").width(Length::Fill).align_x(Alignment::Center)).on_press(MessageDispatcher::Home(HomeMessage::GoToFinance)).width(150),
             ].align_x(Alignment::Center).spacing(10)
         )
