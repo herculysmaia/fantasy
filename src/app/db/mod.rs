@@ -2,7 +2,7 @@ mod migrate;
 mod control;
 
 pub use migrate::criar_banco;
-pub use control::{obter_financeiro, obter_times};
+pub use control::{obter_financeiro, obter_times, obter_ultima_rodada_salva_no_banco, salvar_pontacao_no_banco};
 
 use serde::{Deserialize, Serialize};
 
@@ -114,5 +114,11 @@ pub struct Time {
 impl Time {
     pub fn atulizar_financeiro(&mut self) {
         self.financeiro = obter_financeiro(self.id);
+    }
+
+    pub async fn salvar_pontuacoes(times: Vec<Time>, rodada: u32) {
+        for time in times {
+            salvar_pontacao_no_banco(time, rodada);
+        }
     }
 }

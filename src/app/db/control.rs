@@ -203,3 +203,62 @@ fn obter_participacao(id: u32) -> Vec<u32> {
     }
     participacoes
 }
+
+pub fn obter_ultima_rodada_salva_no_banco() -> u32 {
+    let conn = connect_db();
+
+    let mut stmt = conn.prepare(
+        "SELECT MAX(rodada) FROM pontuacoes"
+    ).expect("Erro ao preparar consulta de última rodada");
+
+    let ultima_rodada: Result<u32, _> = stmt.query_row([], |row| row.get(0));
+
+    match ultima_rodada {
+        Ok(rodada) => rodada,
+        Err(_) => 0,
+    }
+}
+
+pub fn salvar_pontacao_no_banco(time: Time, rodada: u32) {
+    let conn = connect_db();
+
+    for pontuacao in &time.pontos {
+        if pontuacao.rodada != rodada {
+            continue;
+        }
+
+        println!(
+            "Salvando pontuação: Time ID: {}, Pontos: {}, Rodada: {}, Classificação: {}",
+            time.id, pontuacao.pontos, pontuacao.rodada, pontuacao.classificacao
+        );
+
+        conn.execute(
+            "INSERT INTO pontuacoes (time_id, pontos, rodada, classificacao) VALUES (?1, ?2, ?3, ?4)",
+            (time.id, pontuacao.pontos, pontuacao.rodada, pontuacao.classificacao),
+        )
+        .expect("Erro ao salvar pontuação no banco");
+
+        if pontuacao.classificacao >= 1 && pontuacao.classificacao <= 5 {
+            let valor = match pontuacao.classificacao {
+                1 => 60.0,
+                2 => 40.0,
+                3 => 30.0,
+                4 => 20.0,
+                5 => 10.0,
+                _ => 0.0,
+            };
+            conn.execute(
+                "INSERT INTO movimentacoes (time_id, data_dia, data_mes, valor, tipo, rodada) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                (
+                    time.id,
+                    27,
+                    5,
+                    (valor * 100.0) as i32,
+                    0, // 0 = Premiacao
+                    pontuacao.rodada,
+                ),
+            )
+            .expect("Erro ao salvar movimentação de premiação");
+        }
+    }
+}

@@ -1,19 +1,23 @@
 use iced::Task;
 
+use crate::app::db::obter_ultima_rodada_salva_no_banco;
 use crate::app::{api::{buscar_rodada_atual, obter_pontuacoes, ApiError}, obter_times, Time};
 
 use super::{MessageDispatcher, Screen, ScreenTaskReturn};
 
-use iced::widget::{column, text, row};
+use iced::widget::{column, text, row, button};
 
 #[derive(Debug, Clone)]
 pub enum RodadasMessage {
     DefinirRodadaAtual(u32),
-    ExibirPontuacao(Result<Vec<Time>, ApiError>)
+    ExibirPontuacao(Result<Vec<Time>, ApiError>),
+    SalvarPontuacao(Vec<Time>, u32),
+    PontuacaoSalva,
 }
 
 pub struct Rodadas{
     atual: u32,
+    salvo_no_banco: bool,
     lista_de_times: Vec<Time>,
 }
 
@@ -23,7 +27,7 @@ fn message_proc(msg: RodadasMessage) -> MessageDispatcher {
 
 impl Rodadas {
     pub fn new() -> Self {
-        Self { atual: 0, lista_de_times: Vec::new() }
+        Self { atual: 0, salvo_no_banco: false, lista_de_times: Vec::new() }
     }
 
     pub fn task_inicial() -> iced::Task<MessageDispatcher> {
@@ -39,7 +43,19 @@ impl Screen for Rodadas {
 
         match message {
             MessageDispatcher::Rodadas(DefinirRodadaAtual(atual)) => {
-                self.atual = atual - 1;
+                let rodada_do_banco = obter_ultima_rodada_salva_no_banco();
+
+                if rodada_do_banco < atual - 1 {
+                    self.atual = rodada_do_banco + 1;
+                } else {
+                    self.atual = atual - 1;
+                    self.salvo_no_banco = true;
+                }
+
+                if self.atual < 1 {
+                    println!("A rodada atual é menor que 1");
+                    self.atual = 1;
+                }
 
                 let lista_de_times = obter_times();
 
@@ -57,6 +73,15 @@ impl Screen for Rodadas {
                     
                 }
             }
+            MessageDispatcher::Rodadas(SalvarPontuacao(lista_de_times, rodada)) => {
+                if !lista_de_times.is_empty() {
+                    let task = Task::perform(async move { Time::salvar_pontuacoes(lista_de_times, rodada).await }, |_| message_proc(RodadasMessage::PontuacaoSalva));
+                    retorno = (None, task);
+                    self.salvo_no_banco = true;
+                } else {
+                    println!("Nenhum time para salvar pontuação.");
+                }
+            },
                 
             _ => println!("Mensagem de RodadasMessage não mapeada: {:?}", message),
         }
@@ -65,7 +90,19 @@ impl Screen for Rodadas {
     }
 
     fn view(&self) -> iced::Element<MessageDispatcher> {
-        iced::widget::container(exibir_pontuacao(&self.lista_de_times, self.atual))
+        iced::widget::container(
+            column![
+                {
+                    let botao_salvar = button(text("Salvar Pontuação"));
+
+                    if self.salvo_no_banco || self.lista_de_times.is_empty() {
+                        botao_salvar
+                    } else {
+                        botao_salvar.on_press(message_proc(RodadasMessage::SalvarPontuacao(self.lista_de_times.clone(), self.atual)))
+                    }
+                },
+                exibir_pontuacao(&self.lista_de_times, self.atual)
+            ])
             .into()
     }
 }
