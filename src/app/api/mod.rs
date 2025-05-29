@@ -63,7 +63,13 @@ pub async fn buscar_rodada_atual() -> Result<u32, ApiError> {
 
     let json_text = resposta.text().await.map_err(|_| ApiError::CantSerialize)?;
 
-    let rodada: RodadaAtualResponse = serde_json::from_str(&json_text).map_err(|_| ApiError::CantDeserialize)?;
+    let rodada: RodadaAtualResponse = match serde_json::from_str(&json_text) {
+        Ok(r) => r,
+        Err(e) => {
+            println!("Erro: {:?}", e);
+            RodadaAtualResponse { rodada_atual: 1 }
+        },
+    };
 
     Ok(rodada.rodada_atual)
 }

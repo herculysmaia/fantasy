@@ -1,4 +1,4 @@
-use super::{Data, Financeiro, Movimentacao, Time, TipoMovimentacao};
+use super::{Data, Financeiro, Movimentacao, Pontuacao, Time, TipoMovimentacao};
 use rusqlite::Connection;
 use reqwest;
 
@@ -121,7 +121,7 @@ pub fn obter_times() -> Vec<Time> {
             perfil: String::new(),
             escudo_png: row.get(3).expect("Erro ao converter PNG"),
             foto_png: row.get(4).expect("Erro ao converter PNG"),
-            pontos: Vec::new(),
+            pontos: obter_pontos(row.get(0).expect("Erro")),
             indicacao: Some(0),
             participacao: obter_participacao(row.get(0).expect("msg")),
             financeiro: obter_financeiro(row.get(0).expect("msg")),
@@ -261,4 +261,28 @@ pub fn salvar_pontacao_no_banco(time: Time, rodada: u32) {
             .expect("Erro ao salvar movimentação de premiação");
         }
     }
+}
+
+fn obter_pontos(id: u32) -> Vec<Pontuacao> {
+    let conn = connect_db();
+
+    let mut stmt = conn.prepare(
+        "SELECT pontos, rodada, classificacao FROM pontuacoes WHERE time_id = ?1 ORDER BY rodada"
+    ).expect("Erro ao preparar consulta de pontuações");
+
+    let pontuacoes_iter = stmt.query_map([id], |row| {
+        Ok(Pontuacao {
+            pontos: row.get(0).unwrap_or(0.0),
+            rodada: row.get(1).unwrap_or(0),
+            classificacao: row.get(2).unwrap_or(0),
+        })
+    }).expect("Erro ao buscar pontuações");
+
+    let mut pontuacoes = Vec::new();
+    for pontuacao in pontuacoes_iter {
+        if let Ok(p) = pontuacao {
+            pontuacoes.push(p);
+        }
+    }
+    pontuacoes
 }
